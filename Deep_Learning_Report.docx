@@ -1,0 +1,243 @@
+Github Link: 
+
+1. Network Details
+Architecture Overview
+Initial Approach – Multi-Modal MobileNetV2:
+ Processed 224x224 RGB images through MobileNetV2 and 68 facial landmarks through dense layers. Features were combined and fed into two heads: an 8-class expression classifier and a valence/arousal regressor.
+Final Approach – ResNet50 Multi-Task:
+ Used ResNet50 backbone with global average pooling, batch normalization, and a shared dense layer before splitting into three independent branches: expression classification, valence regression, and arousal regression.
+Training Configuration
+Batch Size: 32
+
+
+Image Size: 224x224
+
+
+Optimizer: Adam with adaptive learning rates
+
+
+Dataset Split: 70/30 train-test
+
+
+MobileNetV2: Two-phase training (frozen backbone warmup + fine-tuning) with weighted losses favoring expression classification.
+ResNet50: Progressive 30+70 epoch training, learning rate scheduling, early stopping, and model checkpointing.
+Rationale for Architecture Selection
+MobileNetV2: Efficient and mobile-ready, landmark fusion innovative but complex.
+
+
+ResNet50: Deeper architecture, skip connections, better feature extraction, separate branches allowed task-specific optimization.
+
+
+
+2. Multiple Baselines Comparison
+Experimental Progression
+MobileNetV2 Baseline: Multi-modal fusion, 29% accuracy.
+
+
+Data Augmentation: Flipping, rotation, zoom, translation; 31% accuracy.
+
+
+Weighted Loss: Prioritized expression classification; ~31% accuracy.
+
+
+ResNet Experiments: Short ResNet50 (22%) and ResNet18 (18%) training with limited epochs.
+
+
+Comprehensive ResNet50: Separate task branches, extended training, regularization; 42% accuracy.
+
+
+Key Technical Improvements
+Removed landmark dependency
+
+
+Separate regression branches
+
+
+Advanced regularization and extended training with callbacks
+
+
+
+3. Transfer Learning Details
+Strategy:
+ Both architectures leveraged ImageNet pre-trained weights. Two-phase training (frozen backbone → fine-tuning) preserved learned features and accelerated convergence.
+Advanced Features:
+Learning rate scheduling with plateau detection
+
+
+Early stopping with restoration of best weights
+
+
+Memory management and checkpointing for hardware-constrained optimization
+
+Each Time a model improved it was saved and each epoch was logged in a csv
+
+
+Effectiveness:
+ Transfer learning significantly improved convergence speed, feature quality, and generalization, contributing to the final 42% accuracy.
+
+4. Training Graphs
+Training Monitoring:
+ Visualizations tracked overall loss, task-specific losses, and expression accuracy.
+For RESNET 50
+Incorrect and Correct Images
+
+Graphs:
+
+
+
+
+
+
+Resnet 50 Improved:
+
+
+Observations:
+Transfer Learning Phase: Accuracy rose from ~25% to ~35%
+
+
+Fine-Tuning Phase: Accuracy improved steadily to 42%
+
+
+Balanced loss across tasks confirmed effective multi-task learning
+
+
+Checkpointing preserved the best model under memory constraints
+
+
+Expected Graph Characteristics:
+Decreasing loss curves
+
+
+Steady improvement in classification accuracy
+
+
+Learning rate reductions aligned with fine-tuning phase
+
+
+Valence/arousal regression metrics decreasing over time
+
+
+
+5. Performance Measures
+Evaluation Metrics:
+Classification: Accuracy, F1-score, Cohen’s Kappa, Krippendorff’s Alpha, multiclass AUC
+
+
+Regression: RMSE, Pearson correlation, Sign Agreement Ratio (SAGR), Concordance Correlation Coefficient (CCC)
+
+
+Metric Analysis:
+RMSE: Measures magnitude of error
+
+
+Pearson Correlation: Measures linear relationship
+
+
+SAGR: Evaluates polarity agreement for affect
+
+
+CCC: Combines correlation and bias correction; gold standard for clinical validation
+
+
+Results Summary:
+MobileNetV2: 29% accuracy
+
+
+Augmented MobileNetV2: 31% accuracy
+
+
+ResNet50: 42% accuracy, used early stopping but had to manually stop at 42 epochs as my session crashes on colab due to RAM 
+
+
+Balanced classification and regression performance across tasks
+
+
+
+6. Correctly and Incorrectly Classified Images
+Prediction Analysis:
+Correct predictions align with valence/arousal values consistent with the classified emotion
+
+
+Common failure modes include ambiguous expressions, multi-task conflicts, poor lighting, and occlusions
+
+
+Multi-Task Success Criteria:
+Complete success: correct expression + accurate valence/arousal
+
+
+Partial success: correct in one domain only
+
+
+Failures: mismatched expression or continuous predictions
+
+
+Visualization:
+ Generated comprehensive dashboards for confusion matrices, per-class accuracy, valence/arousal scatter plots, and residual analysis. High-confidence successes mostly occurred in clearly expressed emotions like Happy, Sad, and Neutral.
+
+Technical Implementation Summary
+Dataset and Preprocessing:
+ Annotations included expressions, valence, arousal, and landmarks. Robust loading handled missing or irregular files.
+Hardware Management:
+GPU memory growth enabled
+
+
+Batch size optimized for memory
+
+
+Checkpointing for recovery from interruptions
+
+
+Architecture and Modularity:
+Centralized configuration for reproducibility
+
+
+Fixed seeds for deterministic results
+
+
+Advanced Training Features:
+Learning rate scheduling, early stopping
+
+
+Two-phase progressive training
+
+
+Comprehensive callbacks for monitoring
+
+
+Evaluation Framework:
+Multi-task metrics with automated calculation
+
+
+Visualization for training history and prediction analysis
+
+
+Key Achievements:
+Multi-modal integration initially explored
+
+
+Advanced ResNet50 architecture with task-specific branches
+
+
+Transfer learning and fine-tuning optimized within hardware limits
+
+
+Specialized metrics (SAGR, CCC) used for comprehensive assessment
+
+
+Lessons Learned:
+ResNet50 superior to MobileNetV2 for complex facial affect recognition
+
+
+Progressive transfer learning more effective than single-stage training
+
+
+Metric selection and visualization critical for model understanding
+
+
+Hardware-aware training strategies essential
+
+
+Final Outcome:
+ Systematic improvements raised performance from 29% to 42% accuracy, demonstrating effective deep learning engineering and multi-task optimization.
+
+
